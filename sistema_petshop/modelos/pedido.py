@@ -43,7 +43,6 @@ class Pedido(Base):
     @staticmethod
     def inserir_pedido(session):
         try:
-            # Escolhe o cliente
             Cliente.listar_clientes(session)
             cid = ler_int("ID do cliente que faz o pedido: ")
             cliente = session.query(Cliente).get(cid)
@@ -51,7 +50,6 @@ class Pedido(Base):
                 print("Cliente não encontrado.")
                 return
 
-            # Escolhe o tipo de pedido
             print("Tipo de pedido:")
             print(" 1 - Produto")
             print(" 2 - Serviço (vinculado a um pet)")
@@ -62,7 +60,6 @@ class Pedido(Base):
             pet     = None
 
             if tipo == "1":
-                # Pedido de produto
                 Produto.listar_produtos(session)
                 prid = ler_int("ID do produto: ")
                 produto = session.query(Produto).get(prid)
@@ -71,7 +68,6 @@ class Pedido(Base):
                     return
 
             elif tipo == "2":
-                # Pedido de serviço — sempre vinculado a um pet
                 Pet.listar_pets(session)
                 pid = ler_int("ID do pet para o serviço: ")
                 pet = session.query(Pet).get(pid)
@@ -90,7 +86,6 @@ class Pedido(Base):
                 print("Opção inválida.")
                 return
 
-            # Cria e salva o pedido
             pedido = Pedido(cliente, pet=pet, produto=produto, servico=servico)
             session.add(pedido)
             session.commit()
@@ -127,8 +122,32 @@ class Pedido(Base):
             session.rollback()
 
     @staticmethod
+    def listar_pedidos_por_cliente(session):
+        Cliente.listar_clientes(session)
+        cid = ler_int("ID do cliente para listar pedidos: ")
+        cliente = session.query(Cliente).get(cid)
+        if not cliente:
+            print("Cliente não encontrado.")
+            return
+
+        print(f"\nPedidos para o cliente {cliente.nome}:")
+        pedidos = session.query(Pedido).filter_by(cliente_id=cliente.id).all()
+        if not pedidos:
+            print("Nenhum pedido para este cliente.")
+            return
+
+        for pedido in pedidos:
+            print(f"Pedido ID: {pedido.id}")
+            print(f"  Cliente: {pedido.cliente.nome} (ID: {pedido.cliente.id})")
+            print(f"  Pet: {pedido.pet.nome if pedido.pet else '—'}")
+            if pedido.servico:
+                print(f"  Serviço: {pedido.servico.nome} — R$ {pedido.servico.preco:.2f}")
+            if pedido.produto:
+                print(f"  Produto: {pedido.produto.nome} — R$ {pedido.produto.preco:.2f}")
+            print("-" * 40)
+
+    @staticmethod
     def listar_pedidos_por_pet(session):
-        # Primeiro, escolha o pet
         Pet.listar_pets(session)
         pet_id = ler_int("ID do pet para listar pedidos: ")
         pet = session.query(Pet).get(pet_id)

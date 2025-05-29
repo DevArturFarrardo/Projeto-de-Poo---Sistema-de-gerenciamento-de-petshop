@@ -1,5 +1,3 @@
-# main.py
-
 import sys
 from banco import criar_banco, Session
 from modelos.cliente import Cliente
