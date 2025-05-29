@@ -1,127 +1,177 @@
-
 # Documentação: Sistema de Gerenciamento de Petshop
 
 ## Visão Geral
 
-Este projeto é um sistema de gerenciamento para um petshop, desenvolvido utilizando os princípios da Programação Orientada a Objetos (POO) em Python. O sistema visa gerenciar clientes, pets, serviços oferecidos e agendamentos, proporcionando uma interface intuitiva para os usuários.
+O **Sistema de Gerenciamento de Petshop** é uma aplicação de linha de comando desenvolvida em Python, que utiliza o paradigma de Programação Orientada a Objetos (POO) e o SQLAlchemy ORM para realizar operações de cadastro, consulta, atualização e remoção de clientes, pets, funcionários, produtos, serviços e pedidos em um petshop.
 
 ## Tecnologias Utilizadas
 
-- Linguagem de Programação: Python
-- Banco de Dados: SQLite (arquivo `petshop.db`)
-- Paradigma: Programação Orientada a Objetos (POO)
+* **Linguagem de Programação:** Python 3.8+
+* **ORM:** SQLAlchemy
+* **Banco de Dados:** SQLite (arquivo `petshop.db`)
 
 ## Estrutura do Projeto
 
-O projeto possui a seguinte estrutura de diretórios e arquivos:
-
-Projeto-de-Poo---Sistema-de-gerenciamento-de-petshop/
+```
+Projeto-Petshop/
 ├── sistema_petshop/
-│   ├── __init__.py
-│   ├── cliente.py
-│   ├── pet.py
-│   ├── servico.py
-│   ├── agendamento.py
-│   └── main.py
-├── petshop.db
-└── README.md
-
-Descrição dos principais arquivos:
-
-- `cliente.py`: Contém a classe `Cliente`, responsável por armazenar e gerenciar informações dos clientes do petshop.
-- `pet.py`: Define a classe `Pet`, que representa os animais de estimação dos clientes.
-- `servico.py`: Inclui a classe `Servico`, que descreve os serviços oferecidos pelo petshop, como banho, tosa, etc.
-- `agendamento.py`: Implementa a classe `Agendamento`, que gerencia os agendamentos de serviços para os pets.
-- `main.py`: Arquivo principal que integra todas as funcionalidades e fornece a interface para interação com o usuário.
+│   ├── banco.py                 # Criação de engine e sessão do SQLAlchemy
+│   ├── tratamento_de_erros.py    # Funções utilitárias para leitura e validação de entrada
+│   ├── main.py                  # Interface de menu e fluxo principal da aplicação
+│   └── modelos/                 # Modelos de dados (classes e mapeamento ORM)
+│       ├── base.py              # Definição da classe Base do SQLAlchemy
+│       ├── pessoa.py            # Classe abstrata Pessoa
+│       ├── cliente.py           # Modelo Cliente
+│       ├── funcionario.py       # Modelo Funcionario
+│       ├── pet.py               # Modelo Pet
+│       ├── produto.py           # Modelo Produto
+│       ├── servico.py           # Modelo Servico
+│       └── pedido.py            # Modelo Pedido
+└── petshop.db                   # Banco de dados SQLite (criado na primeira execução)
+```
 
 ## Modelagem de Classes
 
-O sistema é composto pelas seguintes classes principais:
+### 1. Base
 
-### 1. Cliente
+* **Descrição:** Classe base declarativa do SQLAlchemy (`declarative_base()`), usada como superclasse para todos os modelos.
 
-Representa os clientes do petshop.
+### 2. Pessoa (abstrata)
 
-Atributos:
-- `id`: Identificador único do cliente.
-- `nome`: Nome completo do cliente.
-- `telefone`: Número de telefone para contato.
-- `email`: Endereço de e-mail do cliente.
+* **Atributos protegidos:**
 
-Métodos:
-- `cadastrar_cliente()`: Cadastra um novo cliente no sistema.
-- `editar_cliente()`: Edita as informações de um cliente existente.
-- `remover_cliente()`: Remove um cliente do sistema.
+  * `id` (Integer, PK)
+  * `_nome` (String)
+  * `_idade` (Integer)
+  * `_cpf` (String, único)
+* **Métodos:**
 
-### 2. Pet
+  * `nome` (getter/setter)
+  * `idade` (getter/setter)
+  * `cpf` (getter/setter com validação de 11 dígitos)
+  * `exibir_detalhes()` (método abstrato a ser implementado pelas subclasses)
 
-Representa os animais de estimação dos clientes.
+### 3. Cliente (herda Pessoa)
 
-Atributos:
-- `id`: Identificador único do pet.
-- `nome`: Nome do pet.
-- `especie`: Espécie do animal (cão, gato, etc.).
-- `raca`: Raça do pet.
-- `idade`: Idade do pet.
-- `id_cliente`: Referência ao proprietário do pet.
+* **Tabela:** `clientes`
+* **Atributos adicionais:** `cpf` (validação e unicidade)
+* **Métodos estáticos:**
 
-Métodos:
-- `cadastrar_pet()`: Adiciona um novo pet ao sistema.
-- `editar_pet()`: Atualiza as informações de um pet existente.
-- `remover_pet()`: Remove um pet do sistema.
+  * `inserir_cliente(session)`
+  * `listar_clientes(session)`
+  * `atualizar_cliente(session)`
+  * `excluir_cliente(session)`
+  * `listar_clientes_por_produto(session)`
+  * `exibir_detalhes(self)`
 
-### 3. Servico
+### 4. Funcionario (herda Pessoa)
 
-Define os serviços oferecidos pelo petshop.
+* **Tabela:** `funcionarios`
+* **Atributos adicionais:**
 
-Atributos:
-- `id`: Identificador único do serviço.
-- `descricao`: Descrição do serviço (banho, tosa, etc.).
-- `preco`: Preço do serviço.
+  * `departamento` (String)
+* **Métodos estáticos:**
 
-Métodos:
-- `cadastrar_servico()`: Adiciona um novo serviço ao sistema.
-- `editar_servico()`: Atualiza as informações de um serviço existente.
-- `remover_servico()`: Remove um serviço do sistema.
+  * `inserir_funcionario(session)`
+  * `listar_funcionarios(session)`
+  * `atualizar_funcionario(session)`
+  * `excluir_funcionario(session)`
+  * `total_funcionarios(cls)`
+  * `exibir_detalhes(self)`
 
-### 4. Agendamento
+### 5. Pet
 
-Gerencia os agendamentos de serviços para os pets.
+* **Tabela:** `pets`
+* **Atributos:**
 
-Atributos:
-- `id`: Identificador único do agendamento.
-- `id_pet`: Referência ao pet que receberá o serviço.
-- `id_servico`: Referência ao serviço agendado.
-- `data_hora`: Data e hora do agendamento.
+  * `nome`, `especie`, `raca`, `idade`, `cliente_id` (FK para `clientes.id`)
+* **Métodos estáticos:**
 
-Métodos:
-- `agendar_servico()`: Cria um novo agendamento.
-- `editar_agendamento()`: Modifica um agendamento existente.
-- `cancelar_agendamento()`: Cancela um agendamento.
+  * `inserir_pet(session)`
+  * `listar_pets(session)`
+  * `atualizar_pet(session)`
+  * `excluir_pet(session)`
+  * `exibir_detalhes(self)`
+
+### 6. Produto
+
+* **Tabela:** `produtos`
+* **Atributos:** `nome` (String), `preco` (Float)
+* **Métodos estáticos:**
+
+  * `inserir_produto(session)`
+  * `listar_produtos(session)`
+  * `atualizar_produto(session)`
+  * `excluir_produto(session)`
+  * `exibir_detalhes(self)`
+
+### 7. Servico
+
+* **Tabela:** `servicos`
+* **Atributos:** `descricao` (String), `preco` (Float)
+* **Métodos estáticos:**
+
+  * `inserir_servico(session)`
+  * `listar_servicos(session)`
+  * `exibir_detalhes(self)`
+
+### 8. Pedido
+
+* **Tabela:** `pedidos`
+* **Atributos:**
+
+  * `cliente_id` (FK para `clientes.id`)
+  * `pet_id` (FK para `pets.id`, opcional)
+  * `produto_id` (FK para `produtos.id`, opcional)
+  * `servico_id` (FK para `servicos.id`, opcional)
+* **Métodos estáticos:**
+
+  * `inserir_pedido(session)`
+  * `listar_pedidos(session)`
+  * `cancelar_pedido(session)`
+  * `listar_pedidos_por_cliente(session)`
+  * `listar_pedidos_por_pet(session)`
+  * `exibir_detalhes(self)`
 
 ## Funcionalidades do Sistema
 
-- Cadastro de Clientes: Permite adicionar, editar e remover clientes.
-- Cadastro de Pets: Associa pets aos seus respectivos donos, com possibilidade de edição e remoção.
-- Gerenciamento de Serviços: Adiciona, edita e remove serviços oferecidos pelo petshop.
-- Agendamentos: Agenda serviços para os pets, com controle de data e hora.
-- Persistência de Dados: Utiliza SQLite para armazenar e gerenciar os dados de forma eficiente.
+* Menu principal com opções para gerenciar:
+
+  1. Clientes
+  2. Pets
+  3. Produtos
+  4. Serviços
+  5. Funcionários
+  6. Pedidos
+  7. Sair
+* Cada submenu permite inserção, listagem, atualização e remoção de registros.
+* Filtros específicos: listar clientes por produto, pedidos por cliente ou pet.
+* Validação de entradas (strings, inteiros, floats) para evitar erros de formato.
+* Persistência de dados via SQLite e SQLAlchemy.
 
 ## Como Executar o Projeto
 
-1. Clone o repositório:
+1. **Clone o repositório:**
 
-   git clone https://github.com/DevArturFarrardo/Projeto-de-Poo---Sistema-de-gerenciamento-de-petshop.git
-   cd Projeto-de-Poo---Sistema-de-gerenciamento-de-petshop
+   ```bash
+   git clone <URL_DO_REPOSITORIO>
+   cd Projeto-Petshop
+   ```
 
-2. Instale as dependências:
+2. **Instale as dependências:**
 
-   Certifique-se de que o Python 3 está instalado em sua máquina.
+   ```bash
+   pip install sqlalchemy
+   ```
 
-3. Execute o sistema:
+3. **Execute o sistema:**
 
+   ```bash
    python sistema_petshop/main.py
+   ```
+
+4. **Na primeira execução**, o arquivo `petshop.db` e as tabelas serão criados automaticamente.
 
 ## Considerações Finais
 
-Este sistema foi desenvolvido com o objetivo de aplicar conceitos de Programação Orientada a Objetos em um cenário prático. A utilização de classes bem definidas e a separação de responsabilidades facilitam a manutenção e a escalabilidade do projeto. Futuramente, podem ser adicionadas funcionalidades como autenticação de usuários, geração de relatórios e uma interface gráfica para melhorar a experiência do usuário.
+Este projeto demonstra aplicação de conceitos de POO e ORM em um cenário prático de gerenciamento de petshop.
