@@ -10,12 +10,12 @@ O **Sistema de Gerenciamento de Petshop** é uma aplicação de linha de comando
 * **ORM:** SQLAlchemy
 * **Banco de Dados:** SQLite (arquivo `petshop.db`)
 
-##Integrantes
+## Integrantes:
 
-Artur Farrardo
-Julia Parreiras
-Kauã Felipe
-Pedro Rocha
+* Artur Farrardo
+* Julia Parreiras
+* Kauã Felipe
+* Pedro Rocha
 
 ## Estrutura do Projeto
 
